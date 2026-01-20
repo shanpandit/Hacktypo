@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HackTypo - Cyber Typing Test</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --neon-green: #0ff;
+            --neon-blue: #08f;
+            --neon-purple: #a0f;
+            --matrix-green: #0f0;
+            --dark-bg: #0a0a12;
+            --darker-bg: #050508;
+            --terminal-bg: #000;
+            --glow: 0 0 10px, 0 0 20px, 0 0 30px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+        
+        body {
+            background-color: var(--dark-bg);
+            color: var(--matrix-green);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 255, 255, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(160, 0, 255, 0.05) 0%, transparent 20%);
+        }
+        
+        /* Matrix rain effect */
+        .matrix-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.1;
+        }
+        
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            z-index: 1;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--neon-green);
+            text-shadow: var(--glow) var(--neon-green);
+            animation: glitch 3s infinite;
+        }
+        
+        @keyframes glitch {
+            0%, 100% { transform: translate(0); }
+            1% { transform: translate(-2px, 2px); }
+            2% { transform: translate(2px, -1px); }
+            3% { transform: translate(-1px, 1px); }
+        }
+        
+        .subtitle {
+            color: var(--neon-blue);
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 5px var(--neon-blue);
+        }
+        
+        .level-display {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--neon-green);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+        
+        .level-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .level-title {
+            font-size: 1.5rem;
+            color: var(--neon-green);
+        }
+        
+        .level-description {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        
+        .xp-bar {
+            width: 100%;
+            height: 10px;
+            background-color: #222;
+            border-radius: 5px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        
+        .xp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--neon-green), var(--neon-blue));
+            width: 30%;
+            border-radius: 5px;
+            transition: width 1s ease;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+        
+        .time-controls, .level-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .time-btn, .level-btn {
+            padding: 8px 15px;
+            background-color: #111;
+            color: var(--neon-blue);
+            border: 1px solid var(--neon-blue);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        .time-btn:hover, .level-btn:hover {
+            background-color: rgba(0, 136, 255, 0.2);
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+        
+        .time-btn.active, .level-btn.active {
+            background-color: var(--neon-blue);
+            color: #000;
+            box-shadow: 0 0 15px var(--neon-blue);
+        }
+        
+        .start-btn {
+            padding: 12px 25px;
+            background: linear-gradient(45deg, var(--neon-green), var(--neon-blue));
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .start-btn:hover {
+            box-shadow: 0 0 20px var(--neon-green);
+            transform: scale(1.05);
+        }
+        
+        .start-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .timer-container {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+            border: 1px solid var(--neon-purple);
+            box-shadow: 0 0 15px rgba(160, 0, 255, 0.3);
+        }
+        
+        .timer {
+            font-size: 3rem;
+            color: var(--neon-purple);
+            font-weight: bold;
+            text-shadow: var(--glow) var(--neon-purple);
+            font-family: 'Orbitron', monospace;
+            letter-spacing: 3px;
+        }
+        
+        .text-display {
+            background-color: var(--terminal-bg);
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            min-height: 200px;
+            line-height: 1.6;
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            overflow-y: auto;
+            font-size: 1.2rem;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0, 255, 255, 0.1);
+        }
+        
+        .text-display::before {
+            content: "> ";
+            color: var(--neon-green);
+            position: absolute;
+            left: 10px;
+            top: 10px;
+        }
+        
+        .typing-area {
+            position: relative;
+            margin-bottom: 30px;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 150px;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: var(--matrix-green);
+            border: 2px solid var(--neon-green);
+            border-radius: 8px;
+            padding: 20px;
+            font-size: 1.2rem;
+            resize: none;
+            font-family: 'Courier New', monospace;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 20px var(--neon-blue);
+        }
+        
+        .typing-area::before {
+            content: "> ";
+            color: var(--neon-green);
+            position: absolute;
+            left: 15px;
+            top: 20px;
+            font-size: 1.2rem;
+            z-index: 1;
+        }
+        
+        .results {
+            text-align: center;
+            display: none;
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 2px solid var(--neon-purple);
+            box-shadow: 0 0 30px rgba(160, 0, 255, 0.5);
+            animation: fadeIn 0.8s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .results h2 {
+            color: var(--neon-green);
+            margin-bottom: 20px;
+            font-size: 2rem;
+            text-shadow: 0 0 10px var(--neon-green);
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .stat {
+            text-align: center;
+            padding: 15px;
+            background-color: rgba(0, 20, 40, 0.8);
+            border-radius: 8px;
+            border: 1px solid var(--neon-blue);
+            min-width: 120px;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--neon-green);
+            text-shadow: 0 0 10px var(--neon-green);
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .stat-label {
+            color: #aaa;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        .level-up {
+            color: var(--neon-purple);
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px var(--neon-purple);
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .restart-btn {
+            padding: 12px 30px;
+            background: linear-gradient(45deg, var(--neon-purple), var(--neon-blue));
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .restart-btn:hover {
+            box-shadow: 0 0 20px var(--neon-purple);
+            transform: scale(1.05);
+        }
+        
+        .current-char {
+            background-color: rgba(0, 255, 255, 0.3);
+            border-radius: 2px;
+            position: relative;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { background-color: rgba(0, 255, 255, 0.3); }
+            50% { background-color: rgba(0, 255, 255, 0.1); }
+        }
+        
+        .correct {
+            color: var(--neon-green);
+            text-shadow: 0 0 5px var(--neon-green);
+        }
+        
+        .incorrect {
+            color: #ff3366;
+            text-decoration: underline;
+            text-shadow: 0 0 5px #ff3366;
+            position: relative;
+        }
+        
+        .incorrect::after {
+            content: "";
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: #ff3366;
+            box-shadow: 0 0 5px #ff3366;
+        }
+        
+        .fade {
+            animation: fade 0.5s ease-in-out;
+        }
+        
+        @keyframes fade {
+            0% { background-color: rgba(0, 255, 255, 0.5); }
+            100% { background-color: transparent; }
+        }
+        
+        .incorrect-fade {
+            animation: incorrectFade 0.5s ease-in-out;
+        }
+        
+        @keyframes incorrectFade {
+            0% { background-color: rgba(255, 51, 102, 0.5); }
+            100% { background-color: transparent; }
+        }
+        
+        .hacker-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .binary-fall {
+            position: absolute;
+            color: var(--matrix-green);
+            font-size: 1.2rem;
+            animation: fall linear forwards;
+        }
+        
+        @keyframes fall {
+            to { transform: translateY(100vh); }
+        }
+        
+        .glitch-text {
+            position: relative;
+        }
+        
+        .glitch-text::before, .glitch-text::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .glitch-text::before {
+            left: 2px;
+            text-shadow: -2px 0 #ff00ff;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim 5s infinite linear alternate-reverse;
+        }
+        
+        .glitch-text::after {
+            left: -2px;
+            text-shadow: -2px 0 #00ffff;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim2 5s infinite linear alternate-reverse;
+        }
+        
+        @keyframes glitch-anim {
+            0% { clip: rect(31px, 9999px, 94px, 0); }
+            5% { clip: rect(112px, 9999px, 76px, 0); }
+            10% { clip: rect(85px, 9999px, 77px, 0); }
+            15% { clip: rect(27px, 9999px, 97px, 0); }
+            20% { clip: rect(64px, 9999px, 98px, 0); }
+            25% { clip: rect(61px, 9999px, 85px, 0); }
+            30% { clip: rect(99px, 9999px, 114px, 0); }
+            35% { clip: rect(1px, 9999px, 60px, 0); }
+            40% { clip: rect(48px, 9999px, 96px, 0); }
+            45% { clip: rect(25px, 9999px, 125px, 0); }
+            50% { clip: rect(57px, 9999px, 69px, 0); }
+            55% { clip: rect(87px, 9999px, 81px, 0); }
+            60% { clip: rect(5px, 9999px, 58px, 0); }
+            65% { clip: rect(51px, 9999px, 73px, 0); }
+            70% { clip: rect(6px, 9999px, 35px, 0); }
+            75% { clip: rect(77px, 9999px, 103px, 0); }
+            80% { clip: rect(46px, 9999px, 53px, 0); }
+            85% { clip: rect(38px, 9999px, 84px, 0); }
+            90% { clip: rect(12px, 9999px, 91px, 0); }
+            95% { clip: rect(53px, 9999px, 74px, 0); }
+            100% { clip: rect(41px, 9999px, 109px, 0); }
+        }
+        
+        @keyframes glitch-anim2 {
+            0% { clip: rect(65px, 9999px, 119px, 0); }
+            5% { clip: rect(52px, 9999px, 99px, 0); }
+            10% { clip: rect(79px, 9999px, 85px, 0); }
+            15% { clip: rect(84px, 9999px, 84px, 0); }
+            20% { clip: rect(91px, 9999px, 148px, 0); }
+            25% { clip: rect(148px, 9999px, 137px, 0); }
+            30% { clip: rect(134px, 9999px, 72px, 0); }
+            35% { clip: rect(25px, 9999px, 9px, 0); }
+            40% { clip: rect(68px, 9999px, 110px, 0); }
+            45% { clip: rect(124px, 9999px, 76px, 0); }
+            50% { clip: rect(146px, 9999px, 118px, 0); }
+            55% { clip: rect(132px, 9999px, 103px, 0); }
+            60% { clip: rect(147px, 9999px, 143px, 0); }
+            65% { clip: rect(8px, 9999px, 133px, 0); }
+            70% { clip: rect(75px, 9999px, 145px, 0); }
+            75% { clip: rect(115px, 9999px, 9px, 0); }
+            80% { clip: rect(10px, 9999px, 81px, 0); }
+            85% { clip: rect(133px, 9999px, 124px, 0); }
+            90% { clip: rect(28px, 9999px, 115px, 0); }
+            95% { clip: rect(142px, 9999px, 53px, 0); }
+            100% { clip: rect(57px, 9999px, 97px, 0); }
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .timer {
+                font-size: 2.2rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .time-controls, .level-controls {
+                justify-content: center;
+            }
+            
+            .stats {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .stat {
+                width: 80%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Matrix rain background effect -->
+    <div class="matrix-rain" id="matrixRain"></div>
+    
+    <!-- Hacker effects overlay -->
+    <div class="hacker-effect" id="hackerEffect"></div>
+    
+    <div class="container">
+        <header>
+            <h1 class="glitch-text" data-text="HackTypo">HackTypo</h1>
+            <p class="subtitle">Test your typing speed in cyberspace By Sp1d3r</p>
+        </header>
+        
+        <div class="level-display">
+            <div class="level-info">
+                <div class="level-title">LEVEL <span id="current-level">1</span>: <span id="level-name">Script Kiddie</span></div>
+                <div class="level-description" id="level-description">Basic syntax and simple commands</div>
+                <div class="xp-bar">
+                    <div class="xp-fill" id="xp-fill"></div>
+                </div>
+                <div>XP: <span id="current-xp">0</span>/<span id="needed-xp">100</span></div>
+            </div>
+            <div class="level-badge">
+                <i class="fas fa-user-secret" style="font-size: 3rem; color: var(--neon-green);"></i>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="time-controls">
+                <button class="time-btn" data-time="1">60s</button>
+                <button class="time-btn" data-time="2">120s</button>
+                <button class="time-btn active" data-time="3">180s</button>
+                <button class="time-btn" data-time="4">240s</button>
+                <button class="time-btn" data-time="5">300s</button>
+            </div>
+            
+            <div class="level-controls">
+                <button class="level-btn" data-level="1">Basic</button>
+                <button class="level-btn active" data-level="2">Advanced</button>
+                <button class="level-btn" data-level="3">Expert</button>
+                <button class="level-btn" data-level="4">Master</button>
+            </div>
+            
+            <button class="start-btn">INITIATE TEST</button>
+        </div>
+        
+        <div class="timer-container">
+            <div class="timer">03:00</div>
+        </div>
+        
+        <div class="text-display">
+            <p>Select a test duration and level, then click INITIATE TEST to begin. The encrypted text will appear here.</p>
+        </div>
+        
+        <div class="typing-area">
+            <textarea placeholder="Begin decryption here... (text will appear above)" disabled></textarea>
+        </div>
+        
+        <div class="results">
+            <h2>DECRYPTION RESULTS</h2>
+            <div class="level-up" id="level-up-message" style="display: none;">
+                <i class="fas fa-arrow-up"></i> LEVEL UP! <i class="fas fa-arrow-up"></i>
+            </div>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="wpm">0</div>
+                    <div class="stat-label">WPM</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="accuracy">0%</div>
+                    <div class="stat-label">ACCURACY</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="time-taken">0s</div>
+                    <div class="stat-label">TIME</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="xp-earned">0</div>
+                    <div class="stat-label">XP EARNED</div>
+                </div>
+            </div>
+            <button class="restart-btn">DECRYPT AGAIN</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Level system data
+            const levels = [
+                { level: 1, name: "Script Kiddie", description: "Basic syntax and simple commands", xpNeeded: 100, color: "#0ff" },
+                { level: 2, name: "Code Hacker", description: "Complex algorithms and functions", xpNeeded: 300, color: "#0af" },
+                { level: 3, name: "Cyber Ninja", description: "Advanced encryption and security", xpNeeded: 600, color: "#a0f" },
+                { level: 4, name: "Master Coder", description: "Quantum computing and AI algorithms", xpNeeded: 1000, color: "#f0f" }
+            ];
+            
+            // Elements
+            const timeButtons = document.querySelectorAll('.time-btn');
+            const levelButtons = document.querySelectorAll('.level-btn');
+            const startButton = document.querySelector('.start-btn');
+            const timerDisplay = document.querySelector('.timer');
+            const textDisplay = document.querySelector('.text-display');
+            const typingArea = document.querySelector('textarea');
+            const resultsSection = document.querySelector('.results');
+            const wpmElement = document.getElementById('wpm');
+            const accuracyElement = document.getElementById('accuracy');
+            const timeTakenElement = document.getElementById('time-taken');
+            const restartButton = document.querySelector('.restart-btn');
+            const matrixRain = document.getElementById('matrixRain');
+            const hackerEffect = document.getElementById('hackerEffect');
+            
+            // Level elements
+            const currentLevelElement = document.getElementById('current-level');
+            const levelNameElement = document.getElementById('level-name');
+            const levelDescriptionElement = document.getElementById('level-description');
+            const xpFillElement = document.getElementById('xp-fill');
+            const currentXpElement = document.getElementById('current-xp');
+            const neededXpElement = document.getElementById('needed-xp');
+            const xpEarnedElement = document.getElementById('xp-earned');
+            const levelUpMessage = document.getElementById('level-up-message');
+            
+            // Variables
+            let originalText = '';
+            let timer;
+            let timeLeft = 180; // 3 minutes in seconds (default)
+            let testActive = false;
+            let startTime;
+            let errors = 0;
+            let totalTyped = 0;
+            let currentLevel = 1;
+            let currentXP = 0;
+            let selectedLevel = 2; // Default to Advanced (level 2)
+            
+            // Initialize matrix rain
+            createMatrixRain();
+            
+            // Initialize level system
+            updateLevelDisplay();
+            
+            // Time button selection
+            timeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (testActive) return;
+                    timeButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    const minutes = parseInt(this.dataset.time);
+                    timeLeft = minutes * 60;
+                    updateTimerDisplay();
+                });
+            });
+            
+            // Level button selection
+            levelButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (testActive) return;
+                    levelButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedLevel = parseInt(this.dataset.level);
+                    // Trigger a visual effect when changing levels
+                    createBinaryFall(10);
+                });
+            });
+            
+            // Update timer display
+            function updateTimerDisplay() {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Add pulsing effect when time is running out
+                if (timeLeft <= 10 && testActive) {
+                    timerDisplay.style.color = '#ff3366';
+                    timerDisplay.style.textShadow = '0 0 10px #ff3366, 0 0 20px #ff3366';
+                    timerDisplay.classList.add('pulse');
+                } else {
+                    timerDisplay.style.color = 'var(--neon-purple)';
+                    timerDisplay.style.textShadow = 'var(--glow) var(--neon-purple)';
+                }
+            }
+            
+            // Start the test
+            startButton.addEventListener('click', startTest);
+            
+            function startTest() {
+                if (testActive) return;
+                
+                // Reset state
+                clearInterval(timer);
+                testActive = true;
+                errors = 0;
+                totalTyped = 0;
+                resultsSection.style.display = 'none';
+                typingArea.disabled = false;
+                typingArea.value = '';
+                startButton.disabled = true;
+                timeButtons.forEach(btn => btn.disabled = true);
+                levelButtons.forEach(btn => btn.disabled = true);
+                
+                // Fetch content based on selected level
+                fetchContentForLevel(selectedLevel);
+                
+                // Start timer
+                startTime = new Date();
+                timer = setInterval(function() {
+                    timeLeft--;
+                    updateTimerDisplay();
+                    
+                    if (timeLeft <= 0) {
+                        endTest();
+                    }
+                }, 1000);
+                
+                // Focus typing area
+                setTimeout(() => typingArea.focus(), 100);
+                
+                // Visual effects
+                createBinaryFall(15);
+                hackerEffect.style.opacity = '0.1';
+                setTimeout(() => {
+                    hackerEffect.style.opacity = '0';
+                }, 500);
+            }
+            
+            // Fetch content based on level
+            async function fetchContentForLevel(level) {
+                try {
+                    textDisplay.innerHTML = '<p>Downloading encrypted data stream...</p>';
+                    
+                    // Simulate a loading animation
+                    let dots = 0;
+                    const loadingInterval = setInterval(() => {
+                        dots = (dots + 1) % 4;
+                        textDisplay.innerHTML = `<p>Downloading encrypted data stream${'.'.repeat(dots)}</p>`;
+                    }, 300);
+                    
+                    // Different API endpoints or content based on level
+                    let apiUrl;
+                    switch(level) {
+                        case 1: // Basic - simple tech content
+                            apiUrl = 'https://en.wikipedia.org/api/rest_v1/page/summary/Computer_programming';
+                            break;
+                        case 2: // Advanced - coding concepts
+                            apiUrl = 'https://en.wikipedia.org/api/rest_v1/page/summary/Algorithm';
+                            break;
+                        case 3: // Expert - cybersecurity
+                            apiUrl = 'https://en.wikipedia.org/api/rest_v1/page/summary/Cryptography';
+                            break;
+                        case 4: // Master - advanced tech
+                            apiUrl = 'https://en.wikipedia.org/api/rest_v1/page/summary/Artificial_intelligence';
+                            break;
+                        default:
+                            apiUrl = 'https://en.wikipedia.org/api/rest_v1/page/random/summary';
+                    }
+                    
+                    const response = await fetch(apiUrl);
+                    const data = await response.json();
+                    
+                    clearInterval(loadingInterval);
+                    
+                    // Use the extract as our typing text
+                    originalText = data.extract;
+                    renderText();
+                } catch (error) {
+                    console.error('Error fetching content:', error);
+                    // Fallback texts based on level
+                    const fallbackTexts = [
+                        "Programming is the process of creating a set of instructions that tell a computer how to perform a task. Programming can be done using a variety of computer programming languages, such as JavaScript, Python, and C++.",
+                        "An algorithm is a finite sequence of well-defined instructions, typically used to solve a class of specific problems or to perform a computation. Algorithms are used as specifications for performing calculations and data processing.",
+                        "Cryptography is the practice and study of techniques for secure communication in the presence of adversarial behavior. More generally, cryptography is about constructing and analyzing protocols that prevent third parties from reading private messages.",
+                        "Artificial intelligence is intelligence demonstrated by machines, as opposed to the natural intelligence displayed by animals including humans. Leading AI textbooks define the field as the study of intelligent agents."
+                    ];
+                    
+                    originalText = fallbackTexts[Math.min(level - 1, 3)];
+                    renderText();
+                }
+            }
+            
+            // Render the text with styling
+            function renderText() {
+                textDisplay.innerHTML = '';
+                const paragraph = document.createElement('p');
+                
+                // Add each character as a span
+                originalText.split('').forEach(char => {
+                    const charSpan = document.createElement('span');
+                    charSpan.textContent = char;
+                    paragraph.appendChild(charSpan);
+                });
+                
+                textDisplay.appendChild(paragraph);
+                
+                // Highlight the first character
+                if (textDisplay.querySelector('span')) {
+                    textDisplay.querySelector('span').classList.add('current-char');
+                }
+                
+                // Add a typing animation effect
+                const chars = textDisplay.querySelectorAll('span');
+                let delay = 0;
+                chars.forEach(char => {
+                    char.style.opacity = '0';
+                    setTimeout(() => {
+                        char.style.transition = 'opacity 0.1s';
+                        char.style.opacity = '1';
+                    }, delay);
+                    delay += 10;
+                });
+            }
+            
+            // Typing event handler
+            typingArea.addEventListener('input', function() {
+                if (!testActive) return;
+                
+                const typedText = typingArea.value;
+                totalTyped = typedText.length;
+                
+                // Check each character
+                const textSpans = textDisplay.querySelectorAll('span');
+                let allCorrect = true;
+                
+                textSpans.forEach((span, index) => {
+                    // Remove existing classes
+                    span.classList.remove('correct', 'incorrect', 'current-char', 'fade', 'incorrect-fade');
+                    
+                    if (index < typedText.length) {
+                        if (typedText[index] === originalText[index]) {
+                            span.classList.add('correct');
+                            // Add fade effect for correct characters
+                            if (index === typedText.length - 1) {
+                                span.classList.add('fade');
+                                // Visual effect for correct typing
+                                createBinaryFall(1);
+                            }
+                        } else {
+                            span.classList.add('incorrect');
+                            // Add fade effect for incorrect characters
+                            if (index === typedText.length - 1) {
+                                span.classList.add('incorrect-fade');
+                                // Visual effect for incorrect typing
+                                hackerEffect.style.backgroundColor = 'rgba(255, 51, 102, 0.3)';
+                                setTimeout(() => {
+                                    hackerEffect.style.backgroundColor = 'transparent';
+                                }, 200);
+                                allCorrect = false;
+                                errors++;
+                            }
+                        }
+                    }
+                    
+                    // Highlight current character
+                    if (index === typedText.length) {
+                        span.classList.add('current-char');
+                    }
+                });
+                
+                // If user has typed everything correctly and reached the end
+                if (typedText.length === originalText.length && allCorrect) {
+                    endTest();
+                }
+            });
+            
+            // End the test
+            function endTest() {
+                clearInterval(timer);
+                testActive = false;
+                typingArea.disabled = true;
+                startButton.disabled = false;
+                timeButtons.forEach(btn => btn.disabled = false);
+                levelButtons.forEach(btn => btn.disabled = false);
+                
+                const endTime = new Date();
+                const timeTaken = (endTime - startTime) / 1000; // in seconds
+                const minutes = timeTaken / 60;
+                
+                // Calculate WPM (assuming average word length of 5 characters)
+                const words = totalTyped / 5;
+                const wpm = Math.round(words / (timeTaken / 60));
+                
+                // Calculate accuracy
+                const accuracy = totalTyped > 0 ? Math.max(0, Math.round(((totalTyped - errors) / totalTyped) * 100)) : 0;
+                
+                // Calculate XP earned based on performance
+                const xpEarned = calculateXPEarned(wpm, accuracy, selectedLevel);
+                
+                // Add XP and check for level up
+                const leveledUp = addXP(xpEarned);
+                
+                // Display results
+                wpmElement.textContent = wpm;
+                accuracyElement.textContent = `${accuracy}%`;
+                timeTakenElement.textContent = `${Math.round(timeTaken)}s`;
+                xpEarnedElement.textContent = `+${xpEarned}`;
+                
+                // Show level up message if applicable
+                if (leveledUp) {
+                    levelUpMessage.style.display = 'block';
+                    // Celebration effect
+                    for(let i = 0; i < 20; i++) {
+                        setTimeout(() => createBinaryFall(3), i * 100);
+                    }
+                } else {
+                    levelUpMessage.style.display = 'none';
+                }
+                
+                resultsSection.style.display = 'block';
+                
+                // Visual effects for completion
+                hackerEffect.style.backgroundColor = 'rgba(0, 255, 255, 0.3)';
+                setTimeout(() => {
+                    hackerEffect.style.backgroundColor = 'transparent';
+                }, 500);
+            }
+            
+            // Calculate XP earned
+            function calculateXPEarned(wpm, accuracy, level) {
+                let baseXP = Math.floor(wpm * 0.5 + accuracy * 0.5);
+                // Level multiplier
+                const levelMultiplier = 0.5 + (level * 0.5);
+                return Math.max(10, Math.floor(baseXP * levelMultiplier));
+            }
+            
+            // Add XP and check for level up
+            function addXP(xp) {
+                currentXP += xp;
+                let leveledUp = false;
+                
+                // Check if enough XP for next level
+                while (currentLevel < levels.length && currentXP >= levels[currentLevel].xpNeeded) {
+                    currentLevel++;
+                    leveledUp = true;
+                }
+                
+                // Update display
+                updateLevelDisplay();
+                return leveledUp;
+            }
+            
+            // Update level display
+            function updateLevelDisplay() {
+                const levelData = levels[currentLevel - 1];
+                const nextLevelData = levels[currentLevel] || levels[levels.length - 1];
+                
+                currentLevelElement.textContent = currentLevel;
+                levelNameElement.textContent = levelData.name;
+                levelDescriptionElement.textContent = levelData.description;
+                currentXpElement.textContent = currentXP;
+                neededXpElement.textContent = nextLevelData.xpNeeded;
+                
+                // Update XP bar
+                const xpForCurrentLevel = currentLevel === 1 ? 0 : levels[currentLevel - 2].xpNeeded;
+                const xpNeededForNextLevel = nextLevelData.xpNeeded - xpForCurrentLevel;
+                const xpProgress = currentXP - xpForCurrentLevel;
+                const fillPercentage = (xpProgress / xpNeededForNextLevel) * 100;
+                xpFillElement.style.width = `${fillPercentage}%`;
+                
+                // Update colors based on level
+                document.documentElement.style.setProperty('--neon-green', levelData.color);
+            }
+            
+            // Restart test
+            restartButton.addEventListener('click', function() {
+                // Reset to default time
+                timeButtons.forEach(btn => {
+                    btn.disabled = false;
+                    if (btn.dataset.time === '3') {
+                        btn.classList.add('active');
+                        timeLeft = 180;
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+                
+                // Reset to default level
+                levelButtons.forEach(btn => {
+                    btn.disabled = false;
+                    if (btn.dataset.level === '2') {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+                
+                updateTimerDisplay();
+                resultsSection.style.display = 'none';
+                textDisplay.innerHTML = '<p>Select a test duration and level, then click INITIATE TEST to begin. The encrypted text will appear here.</p>';
+                levelUpMessage.style.display = 'none';
+            });
+            
+            // Create matrix rain effect
+            function createMatrixRain() {
+                const characters = '01';
+                const fontSize = 14;
+                const columns = Math.floor(window.innerWidth / fontSize);
+                
+                for (let i = 0; i < columns; i++) {
+                    const column = document.createElement('div');
+                    column.style.position = 'absolute';
+                    column.style.top = '-100px';
+                    column.style.left = `${i * fontSize}px`;
+                    column.style.fontSize = `${fontSize}px`;
+                    column.style.color = 'rgba(0, 255, 0, 0.8)';
+                    column.style.fontFamily = 'monospace';
+                    column.style.whiteSpace = 'nowrap';
+                    column.style.animation = `fall ${Math.random() * 5 + 5}s linear infinite`;
+                    column.style.animationDelay = `${Math.random() * 5}s`;
+                    
+                    let text = '';
+                    for (let j = 0; j < 30; j++) {
+                        text += characters.charAt(Math.floor(Math.random() * characters.length));
+                    }
+                    
+                    column.textContent = text;
+                    matrixRain.appendChild(column);
+                }
+            }
+            
+            // Create binary fall effect
+            function createBinaryFall(count) {
+                for (let i = 0; i < count; i++) {
+                    const binary = document.createElement('div');
+                    binary.classList.add('binary-fall');
+                    binary.textContent = Math.random() > 0.5 ? '0' : '1';
+                    binary.style.left = `${Math.random() * 100}vw`;
+                    binary.style.fontSize = `${Math.random() * 20 + 10}px`;
+                    binary.style.opacity = Math.random() * 0.5 + 0.5;
+                    binary.style.animationDuration = `${Math.random() * 3 + 2}s`;
+                    
+                    hackerEffect.appendChild(binary);
+                    
+                    // Remove after animation completes
+                    setTimeout(() => {
+                        if (binary.parentNode === hackerEffect) {
+                            hackerEffect.removeChild(binary);
+                        }
+                    }, 5000);
+                }
+            }
+            
+            // Initialize timer display
+            updateTimerDisplay();
+            
+            // Add some initial effects
+            setTimeout(() => createBinaryFall(5), 1000);
+            setTimeout(() => createBinaryFall(3), 3000);
+        });
+    </script>
+</body>
+</html>
